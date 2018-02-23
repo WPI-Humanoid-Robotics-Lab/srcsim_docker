@@ -35,11 +35,11 @@ Docker images for srcsim
 	
 	sudo apt-get install docker-ce
 ```
-2. create a network bridge named srcsim
+2. Create a network bridge named srcsim. 
 	```bash
 	docker network create --subnet 192.168.1.0/16 --driver bridge srcsim
 	```
-3. Install [nvidia-docker plugin](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(version-1.0))
+3. Install [nvidia-docker plugin](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(version-1.0)). Please refer to prerequisites in that link.  
 	```bash
 	curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | \
   	
@@ -53,21 +53,23 @@ Docker images for srcsim
 	
 	sudo apt-get install nvidia-docker nvidia-modprobe
 	```
-4. Run the script to pull docker image and run the container
+4. Run the script to pull docker image and run the container. Docker needs sudo access by default. If you see an error while running the docker image, use sudo. Refer to [this](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo) if you wish to allow docker commands without sudo.
 	```bash
 	# clone the repository if you have not done that already
 	git clone https://github.com/WPI-Humanoid-Robotics-Lab/srcsim_docker.git  -b master --single-branch
 	
 	# Go the srcsim_docker directory
-	cd ~/srcsim_docker/
+	cd srcsim_docker/
 	
+	# When running it for the first time, it might take a while depending on your internet speed
+	# The scripts have IHMC controller version number in the name
 	bash run_srcsim_docker0.9.bash
 	```
 5. Connect gazebo client on host machine (in a new terminal)
 	```bash
 	GAZEBO_MASTER_URI=http://192.168.2.10:11345 gzclient
 	```
-6. To run code on docker image add the following 2 variables to ~/.bashrc
+6. To run code on docker image export the following variables. You can add these to ~/.bashrc for ease of use.
 	```bash
 	export ROS_MASTER_URI=http://192.168.2.10:11311
 	export ROS_IP=192.168.0.1 # Confirm this from ifconfig results
@@ -77,3 +79,4 @@ Docker images for srcsim
         source ~/.bashrc
         rosrun tough_controller_interface test_pelvis 0.8
 	```
+8. To stop the docker run `docker stop srcsim`
