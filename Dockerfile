@@ -107,20 +107,30 @@ RUN rm /tmp/default.tar.gz
 # Clone ihmc repos locally
 RUN mkdir ~/indigo_ws/src/ihmc_repos
 RUN git clone https://github.com/WPI-Humanoid-Robotics-Lab/ihmc_ros_core.git ~/indigo_ws/src/ihmc_repos/ihmc_ros_core
-RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_ros_core && git checkout 0.9.2
+RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_ros_core && git checkout val-develop-messages-update
 RUN git clone https://github.com/ihmcrobotics/ihmc_valkyrie_ros.git ~/indigo_ws/src/ihmc_repos/ihmc_valkyrie_ros
-RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_valkyrie_ros && git checkout 0.9.0
+RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_valkyrie_ros && git checkout release/0.10.0
 RUN git clone https://github.com/ihmcrobotics/ihmc-ros-control.git ~/indigo_ws/src/ihmc_repos/ihmc_ros_control
 RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_ros_control && git checkout 0.5.0
-
 # Compile the code
 RUN /bin/bash -c "source ~/.bashrc && cd ~/indigo_ws && sudo rm -rf build devel && catkin_make"
 RUN sudo chown -R whrl:whrl ~/indigo_ws
 
-# run warmup gradle to download most of the files required for ihmc controllers
-RUN /bin/bash -c "source ~/indigo_ws/devel/setup.bash && \
-                  roslaunch ihmc_valkyrie_ros valkyrie_warmup_gradle_cache.launch"
+RUN git clone https://github.com/ihmcrobotics/ihmc-open-robotics-software.git -b val-develop --single-branch ~/ihmc-open-robotics-software
+# RUN cd ~/ihmc-open-robotics-software && git checkout val-develop 
+RUN cd ~/ihmc-open-robotics-software && git clone https://github.com/ihmcrobotics/ihmc-path-planning.git 
+RUN cd ~/ihmc-open-robotics-software/ihmc-path-planning && git checkout 0.10.0
+RUN cd ~/ihmc-open-robotics-software && git clone https://github.com/ihmcrobotics/robot-environment-awareness.git
+RUN cd ~/ihmc-open-robotics-software/robot-environment-awareness && git checkout 0.10.0
+RUN cd ~/ihmc-open-robotics-software && ./gradlew && cd valkyrie && ../gradlew deployLocal
+RUN echo 'export IHMC_SOURCE_LOCATION=~/ihmc-open-robotics-software' >> ~/.bashrc
 
+# run warmup gradle to download most of the files required for ihmc controllers
+RUN export IHMC_SOURCE_LOCATION=~/ihmc-open-robotics-software && \
+		  source ~/indigo_ws/devel/setup.bash && \
+                  roslaunch ihmc_valkyrie_ros valkyrie_warmup_gradle_cache.launch use_local_build:=true
+
+ADD valkyrie_sim_gazebo_sync.urdf /opt/nasa/indigo/share/val_description/model/urdf
 # This might not be required anymore
 EXPOSE 8080
 EXPOSE 8000 
@@ -130,4 +140,4 @@ EXPOSE 11711
 EXPOSE 5900
 
 # Run command that should be the entry poitn to our code
-CMD /bin/bash -c "source ~/.bashrc && roslaunch srcsim finals.launch"
+CMD /bin/bash -c "source ~/.bashrc && roslaunch srcsim finals.launch grasping_init:=false use_local_build:=true"
