@@ -73,7 +73,7 @@ Docker images for srcsim
 	export ROS_IP=192.168.0.1 # Confirm this from ifconfig results
 	```
 7. Source ~/.bashrc and test connection
-       ```bash
-       source ~/.bashrc
-       rosrun tough_controller_interface test_pelvis 0.8
-       ```
+	```bash
+        source ~/.bashrc
+        rosrun tough_controller_interface test_pelvis 0.8
+	```
