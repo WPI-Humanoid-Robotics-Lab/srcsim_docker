@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
+echo "Pulling docker image froim docker hub"
+docker pull ninja777/srcsim:0.8.2
+
 echo "running srcsim 0.8.2 docker container"
-echo $current
 
 
 # XAUTH=/tmp/.docker.xauth
@@ -54,4 +56,4 @@ docker run --rm --name srcsim \
   --net=srcsim \
   --ip=192.168.2.10 \
   ${DOCKER_GPU_PARAMS} \
-  srcsim:0.8.2 
+  ninja777/srcsim:0.8.2
