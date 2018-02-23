@@ -110,7 +110,7 @@ RUN source /opt/nasa/indigo/setup.bash
 #RUN cd ~/indigo_ws/src/humanoid_navigation && git checkout indigo-devel
 RUN mkdir ~/indigo_ws/src/ihmc_repos
 RUN git clone https://github.com/WPI-Humanoid-Robotics-Lab/ihmc_ros_core.git ~/indigo_ws/src/ihmc_repos/ihmc_ros_core
-RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_ros_core && git checkout 0.8.2
+RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_ros_core && git fetch && git checkout warmupfix-0.8.2
 RUN git clone https://github.com/ihmcrobotics/ihmc_valkyrie_ros.git ~/indigo_ws/src/ihmc_repos/ihmc_valkyrie_ros
 RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_valkyrie_ros && git checkout 0.8.2
 RUN git clone https://github.com/ihmcrobotics/ihmc-ros-control.git ~/indigo_ws/src/ihmc_repos/ihmc_ros_control
@@ -146,6 +146,7 @@ EXPOSE 11311
 EXPOSE 11611
 EXPOSE 11711
 EXPOSE 5900
+
 
 # ADD scripts/startup.sh /home/whrl/startup.sh
 # RUN sudo chmod +x /home/whrl/startup.sh
