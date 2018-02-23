@@ -55,6 +55,12 @@ Docker images for srcsim
 	```
 4. Run the script to pull docker image and run the container
 	```bash
+	# clone the repository if you have not done that already
+	git clone https://github.com/WPI-Humanoid-Robotics-Lab/srcsim_docker.git  -b master --single-branch
+	
+	# Go the srcsim_docker directory
+	cd ~/srcsim_docker/
+	
 	bash run_srcsim_docker0.9.bash
 	```
 5. Connect gazebo client on host machine (in a new terminal)
