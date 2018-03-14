@@ -41,16 +41,12 @@ docker network create --subnet 192.168.1.0/16 --driver bridge srcsim
 ```
 3. Install [nvidia-docker plugin](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(version-1.0)). Please refer to prerequisites in that link.  
 ```bash
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | \
-  	
-sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
 	
-curl -s -L https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list | \
-  	
-sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-	
+curl -s -L https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+
 sudo apt-get update
-	
+
 sudo apt-get install nvidia-docker nvidia-modprobe
 ```
 
