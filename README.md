@@ -61,12 +61,12 @@ bash run_srcsim_docker0.9.bash
 
 5. Connect gazebo client on host machine (in a new terminal)
 ```bash
-GAZEBO_MASTER_URI=http://192.168.2.10:11345 gzclient
+GAZEBO_MASTER_URI=http://201.1.1.10:11345 gzclient
 ```
 6. To run code on docker image export the following variables. You can add these to ~/.bashrc for ease of use.
 ```bash
-export ROS_MASTER_URI=http://192.168.2.10:11311
-export ROS_IP=192.168.0.1 # Confirm this from ifconfig results
+export ROS_MASTER_URI=http://201.1.1.10:11311
+export ROS_IP=201.1.0.1 # Confirm this from ifconfig results
 ```
 7. Source ~/.bashrc and test connection
 ```bash
