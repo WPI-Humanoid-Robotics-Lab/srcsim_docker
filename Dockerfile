@@ -19,7 +19,6 @@ ENV HOME /home/whrl
 
 # Installing general required packages
 RUN sudo apt-get -y update && sudo apt-get install -y wget
-# && sudo rm -rf /var/lib/apt/lists/
 
 # Install srcsim and Gazebo7
 RUN /bin/bash -c "echo 'source /opt/ros/indigo/setup.bash' >> ~/.bashrc"
@@ -30,16 +29,7 @@ RUN wget -O - http://srcsim.gazebosim.org/src/src.key | sudo apt-key add -
 RUN wget -O - https://bintray.com/user/downloadSubjectPublicKey?username=bintray | sudo apt-key add -
 RUN sudo apt-get -y update && sudo apt-get install -y srcsim
 
-##Environment Variables
-#RUN /bin/bash -c "echo 'ROS_MASTER_URI=http://172.17.0.1:11311' >> ~/.bashrc"
-#RUN /bin/bash -c "echo 'ROS_IP=`hostname -i`' >> ~/.bashrc"
-#RUN /bin/bash -c "echo 'ROS_HOSTNAME=`hostname -i`' >> ~/.bashrc"
-
 # Install Dependencies 
-
-# Leaving this out of the installs since no vnc needed
-# x11vnc xvfb icewm xz-utils cmake screen konsole\
-
 RUN  sudo apt-get -y update && sudo apt-get install -y git \
   g++ vim nano wget  ca-certificates  ssh ruby ros-indigo-pcl-ros \
   x11vnc xvfb icewm lxpanel iperf xz-utils cmake screen terminator konsole\ 
@@ -58,7 +48,6 @@ RUN  sudo apt-get -y update && sudo apt-get install -y git \
   ros-indigo-multisense-ros ros-indigo-robot-self-filter ros-indigo-octomap \
   ros-indigo-octomap-msgs ros-indigo-octomap-ros ros-indigo-gridmap-2d \
   software-properties-common python-software-properties debconf-i18n 
-#  && sudo rm -rf /var/lib/apt/lists/
 
 # Create a catkin workspace
 RUN /bin/bash -c "source /opt/nasa/indigo/setup.bash && \
@@ -92,8 +81,8 @@ RUN wget -P /tmp/ https://osrf-distributions.s3.amazonaws.com/srcsim/valkyrie_co
 RUN tar -xvf /tmp/valkyrie_controller.0.8.2.tar.gz -C $HOME
 RUN rm /tmp/valkyrie_controller.0.8.2.tar.gz
 
-RUN /bin/bash -c "echo 'export ROS_MASTER_URI=http://192.168.2.10:11311' >> ~/.bashrc"
-RUN /bin/bash -c "echo 'export ROS_IP=192.168.2.10' >> ~/.bashrc"                  
+RUN /bin/bash -c "echo 'export ROS_MASTER_URI=http://201.1.1.10:11311' >> ~/.bashrc"
+RUN /bin/bash -c "echo 'export ROS_IP=201.1.1.10' >> ~/.bashrc"                 
 RUN /bin/bash -c "source ~/.bashrc"
 
 RUN wget -P /tmp/ https://bitbucket.org/osrf/gazebo_models/get/default.tar.gz
@@ -102,8 +91,6 @@ RUN tar -xvf /tmp/default.tar.gz -C $HOME/.gazebo/models --strip 1
 RUN rm /tmp/default.tar.gz
 
 RUN source /opt/nasa/indigo/setup.bash
-#RUN /bin/bash -c "source /opt/nasa/indigo/setup.bash && \
-#		  roslaunch ihmc_valkyrie_ros valkyrie_warmup_gradle_cache.launch"
 
 # Clone additional repos that are required for our code
 #RUN git clone https://github.com/ninja777/humanoid_navigation.git ~/indigo_ws/src/humanoid_navigation
@@ -119,40 +106,13 @@ RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_ros_control && git checkout 0.5.0
 RUN /bin/bash -c "source ~/indigo_ws/devel/setup.bash && \
                   roslaunch ihmc_valkyrie_ros valkyrie_warmup_gradle_cache.launch"
 
-# Make ssh dir for gitlab deploy key and set up repo
-# RUN sudo mkdir /home/whrl/.ssh/
-# ADD ssh/id_rsa /home/whrl/.ssh/id_rsa
-# RUN sudo chmod 400 /home/whrl/.ssh/id_rsa
-# RUN sudo chown whrl:whrl /home/whrl/.ssh -R
-# RUN sudo touch /home/whrl/.ssh/known_hosts
-# RUN sudo /bin/sh -c "ssh-keyscan gitlab.com >> /home/whrl/.ssh/known_hosts"
-# RUN git clone -b Final2Develop --single-branch git@gitlab.com:whrl/space_robotics_challenge.git ~/indigo_ws/src/space_robotics_challenge
-# RUN cd ~/indigo_ws/src/space_robotics_challenge && git submodule update --init --recursive
-
-# Enable multicast here, atm it doesn't work
-#RUN sudo sh -c "echo 0 >/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts"
-#RUN sudo service procps restart
-
 # Compile the code
 RUN /bin/bash -c "source ~/.bashrc && cd ~/indigo_ws && sudo rm -rf build devel && catkin_make"
 RUN sudo chown -R whrl:whrl ~/indigo_ws
 
-#RUN bash -c 'echo "if ! pidof -x \"icewm\" > /dev/null; then nohup icewm &>> ~/icewm.log & fi" >> ~/.bashrc'
-#RUN bash -c 'echo "export IS_FIELD=true" >> ~/.bashrc'
-
-EXPOSE 8080
-EXPOSE 8000 
-EXPOSE 11311
-EXPOSE 11611
-EXPOSE 11711
-EXPOSE 5900
-
-
-# ADD scripts/startup.sh /home/whrl/startup.sh
-# RUN sudo chmod +x /home/whrl/startup.sh
+ENV PATH /usr/local/nvidia/bin:${PATH}
+ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
+RUN echo 'source /usr/share/gazebo/setup.sh' >> ~/.bashrc
 
 # Run command that should be the entry poitn to our code
-# CMD bin/bash -c "/home/whrl/startup.sh"
-# CMD x11vnc -create -forever -usepw -repeat
-# CMD bin/bash -c "source ~/.bashrc && roslaunch val_bringup whrl.launch"
 CMD /bin/bash -c "source ~/.bashrc && roslaunch srcsim finals.launch"
