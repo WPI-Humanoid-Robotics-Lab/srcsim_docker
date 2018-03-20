@@ -2,7 +2,7 @@
 Docker images for srcsim
 
 ### Instructions
-1. Install [docker-ce](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+1. Install [docker-ce](https://docs.docker.com/install/linux/docker-ce/ubuntu/) using the instructions given below.
 ```bash
 sudo apt-get update
 
@@ -35,10 +35,6 @@ sudo apt-get update
 	
 sudo apt-get install docker-ce
 ```
-2. Create a network bridge named srcsim. 
-```bash
-docker network create --subnet 192.168.1.0/16 --driver bridge srcsim
-```
 3. Install [nvidia-docker plugin](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(version-1.0)). Please refer to prerequisites in that link.  
 ```bash
 curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
@@ -50,7 +46,7 @@ sudo apt-get update
 sudo apt-get install nvidia-docker nvidia-modprobe
 ```
 
-4. Run the script to pull docker image and run the container. Docker needs sudo access by default. If you see an error while running the docker image, use sudo. Refer to [this](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo) if you wish to allow docker commands without sudo.
+4. Run the script to build docker image and run the container. Docker needs sudo access by default. If you see an error while running the docker image, use sudo. Refer to [this](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo) if you wish to allow docker commands without sudo.
 ```bash
 # clone the repository if you have not done that already
 git clone https://github.com/WPI-Humanoid-Robotics-Lab/srcsim_docker.git  -b master --single-branch
