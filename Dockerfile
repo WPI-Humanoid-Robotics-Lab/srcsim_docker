@@ -19,7 +19,6 @@ ENV HOME /home/whrl
 
 # Installing general required packages
 RUN sudo apt-get -y update && sudo apt-get install -y wget
-# && sudo rm -rf /var/lib/apt/lists/
 
 RUN rosdep update 
 
@@ -30,17 +29,9 @@ RUN wget -O - http://packages.osrfoundation.org/gazebo.key | sudo apt-key add -
 RUN sudo sh -c 'echo "deb http://srcsim.gazebosim.org/src trusty main" > /etc/apt/sources.list.d/src-latest.list'
 RUN wget -O - http://srcsim.gazebosim.org/src/src.key | sudo apt-key add -
 RUN wget -O - https://bintray.com/user/downloadSubjectPublicKey?username=bintray | sudo apt-key add -
-RUN sudo apt-get -y update && sudo apt-get install -y srcsim
-
-##Environment Variables
-#RUN /bin/bash -c "echo 'ROS_MASTER_URI=http://172.17.0.1:11311' >> ~/.bashrc"
-#RUN /bin/bash -c "echo 'ROS_IP=`hostname -i`' >> ~/.bashrc"
-#RUN /bin/bash -c "echo 'ROS_HOSTNAME=`hostname -i`' >> ~/.bashrc"
+RUN sudo apt-get -y update && sudo apt-get install -y gazebo7=7.11.0-1* srcsim
 
 # Install Dependencies 
-
-# Leaving this out of the installs since no vnc needed
-# x11vnc xvfb icewm xz-utils cmake screen konsole\
 
 RUN  sudo apt-get -y update && sudo apt-get install -y git \
   g++ vim nano wget  ca-certificates  ssh ruby ros-indigo-pcl-ros \
@@ -60,7 +51,6 @@ RUN  sudo apt-get -y update && sudo apt-get install -y git \
   ros-indigo-multisense-ros ros-indigo-robot-self-filter ros-indigo-octomap \
   ros-indigo-octomap-msgs ros-indigo-octomap-ros ros-indigo-gridmap-2d \
   software-properties-common python-software-properties debconf-i18n 
-#  && sudo rm -rf /var/lib/apt/lists/
 
 # Create a catkin workspace
 RUN /bin/bash -c "source /opt/nasa/indigo/setup.bash && \
@@ -90,12 +80,13 @@ RUN sudo bash -c 'echo "@ros - rtprio 99" > /etc/security/limits.d/ros-rtprio.co
 RUN sudo groupadd ros
 RUN sudo usermod -a -G ros whrl
 
-RUN wget -P /tmp/ http://gazebosim.org/distributions/srcsim/valkyrie_controller.tar.gz
-RUN tar -xvf /tmp/valkyrie_controller.tar.gz -C $HOME
-RUN rm /tmp/valkyrie_controller.tar.gz
+#RUN wget -P /tmp/ http://gazebosim.org/distributions/srcsim/valkyrie_controller.tar.gz
+#RUN tar -xvf /tmp/valkyrie_controller.tar.gz -C $HOME
+#RUN rm /tmp/valkyrie_controller.tar.gz
+RUN mkdir -p ~/valkyrie
 
-RUN /bin/bash -c "echo 'export ROS_MASTER_URI=http://192.168.2.10:11311' >> ~/.bashrc"
-RUN /bin/bash -c "echo 'export ROS_IP=192.168.2.10' >> ~/.bashrc"                  
+RUN /bin/bash -c "echo 'export ROS_MASTER_URI=http://201.1.1.10:11311' >> ~/.bashrc"
+RUN /bin/bash -c "echo 'export ROS_IP=201.1.1.10' >> ~/.bashrc"                  
 RUN /bin/bash -c "source ~/.bashrc"
 
 RUN wget -P /tmp/ https://bitbucket.org/osrf/gazebo_models/get/default.tar.gz
@@ -131,13 +122,12 @@ RUN export IHMC_SOURCE_LOCATION=~/ihmc-open-robotics-software && \
                   roslaunch ihmc_valkyrie_ros valkyrie_warmup_gradle_cache.launch use_local_build:=true
 
 ADD valkyrie_sim_gazebo_sync.urdf /opt/nasa/indigo/share/val_description/model/urdf
-# This might not be required anymore
-EXPOSE 8080
-EXPOSE 8000 
-EXPOSE 11311
-EXPOSE 11611
-EXPOSE 11711
-EXPOSE 5900
+
+
+ENV PATH /usr/local/nvidia/bin:${PATH}
+ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
+
+RUN echo 'source /usr/share/gazebo/setup.sh' >> ~/.bashrc
 
 # Run command that should be the entry poitn to our code
 CMD /bin/bash -c "source ~/.bashrc && roslaunch srcsim finals.launch grasping_init:=false use_local_build:=true"
