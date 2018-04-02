@@ -107,7 +107,7 @@ RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_ros_control && git checkout 0.5.0
 RUN /bin/bash -c "source ~/.bashrc && cd ~/indigo_ws && sudo rm -rf build devel && catkin_make"
 RUN sudo chown -R whrl:whrl ~/indigo_ws
 
-RUN git clone https://github.com/ihmcrobotics/ihmc-open-robotics-software.git -b val-develop --single-branch ~/ihmc-open-robotics-software
+RUN git clone https://github.com/WPI-Humanoid-Robotics-Lab/ihmc-open-robotics-software.git -b val-develop --single-branch ~/ihmc-open-robotics-software
 # RUN cd ~/ihmc-open-robotics-software && git checkout val-develop 
 RUN cd ~/ihmc-open-robotics-software && git clone https://github.com/ihmcrobotics/ihmc-path-planning.git 
 RUN cd ~/ihmc-open-robotics-software/ihmc-path-planning && git checkout 0.10.0
