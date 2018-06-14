@@ -98,6 +98,9 @@ RUN rm /tmp/default.tar.gz
 RUN mkdir ~/indigo_ws/src/ihmc_repos
 RUN git clone https://github.com/WPI-Humanoid-Robotics-Lab/ihmc_ros_core.git ~/indigo_ws/src/ihmc_repos/ihmc_ros_core
 RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_ros_core && git checkout 0.9.2
+COPY ihmc_ros_core.patch  /home/whrl/indigo_ws/src/ihmc_repos/ihmc_ros_core.patch
+RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_ros_core && git apply /home/whrl/indigo_ws/src/ihmc_repos/ihmc_ros_core.patch
+
 RUN git clone https://github.com/ihmcrobotics/ihmc_valkyrie_ros.git ~/indigo_ws/src/ihmc_repos/ihmc_valkyrie_ros
 RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_valkyrie_ros && git checkout 0.9.0
 RUN git clone https://github.com/ihmcrobotics/ihmc-ros-control.git ~/indigo_ws/src/ihmc_repos/ihmc_ros_control
