@@ -1,26 +1,28 @@
 #!/usr/bin/env bash
 
-if [[ "$(docker images -q srcsim:0.11 2> /dev/null)" == "" ]]; then
-  git clone -b 0.11 https://github.com/WPI-Humanoid-Robotics-Lab/srcsim_docker.git
-  cd srcsim_docker
-  docker build -t srcsim:0.11 .
-  cd .. && rm -rf srcsim_docker
-fi
+DUID=$((UID%256))
+IP=${IPADDR:-172.16.$DUID.$DUID}
 
-if [[ "$(docker network ls | grep srcsim 2> /dev/null)" == "" ]]; then
+# if [[ "$(docker images -q drcsim:$DUID 2> /dev/null)" == "" ]]; then
+docker build -t srcsim:$DUID --build-arg ip=$IP .
+# fi
+
+if [[ "$(docker network ls | grep docker_bridge_$DUID 2> /dev/null)" == "" ]]; then
   echo "creating network bridge for docker image"
-  docker network create --subnet 201.1.1.0/16 --driver bridge srcsim
+  docker network create --subnet=172.16.$DUID.0/24 --driver=bridge docker_bridge_$DUID
 fi
 
 echo "running srcsim 0.11 docker container"
 
-# XAUTH=/tmp/.docker.xauth
-# xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
+# Gazebo won't start gpurayplugin without display
+XAUTH=/tmp/.docker.xauth
+xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
 if [ ! -f /tmp/.docker.xauth ]
 then
   export XAUTH=/tmp/.docker.xauth
   xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
 fi
+DISPLAY="${DISPLAY:-:0}"
 
 # Use lspci to check for the presence of an nvidia graphics card
 has_nvidia=`lspci | grep -i nvidia | wc -l`
@@ -35,33 +37,25 @@ then
     echo please install nvidia-modprobe
     exit -1
   fi
-  # check if nvidia-docker-plugin is installed
-  if curl -s http://localhost:3476/docker/cli > /dev/null
-  then
-    DOCKER_GPU_PARAMS=" $(curl -s http://localhost:3476/docker/cli)"
-  else
-    echo nvidia-docker-plugin not responding on http://localhost:3476/docker/cli
-    echo please install nvidia-docker-plugin
-    echo https://github.com/NVIDIA/nvidia-docker/wiki/Installation
-    exit -1
-  fi
-else
-  DOCKER_GPU_PARAMS=""
 fi
 
-DISPLAY="${DISPLAY:-:0}"
+printf "IP address is $IP \nROS master URI : http://$IP:11311 \nGazebo master URI : http://$IP:11345\n"
 
-docker run --rm --name srcsim \
-  -e DISPLAY=unix$DISPLAY \
-  -e XAUTHORITY=/tmp/.docker.xauth \
-  -e ROS_MASTER_URI=http://201.1.1.10:11311 \
-  -e ROS_IP=201.1.1.10 \
-  -v "/etc/localtime:/etc/localtime:ro" \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -v "/tmp/.docker.xauth:/tmp/.docker.xauth" \
-  -v /dev/log:/dev/log \
-  --ulimit rtprio=99 \
-  --net=srcsim \
-  --ip=201.1.1.10 \
-  ${DOCKER_GPU_PARAMS} \
-  srcsim:0.11 
+docker run --rm --name srcsim_${USER} \
+    -e DISPLAY=unix$DISPLAY \
+    --net=docker_bridge_$DUID \
+    --ip=$IP \
+    -e XAUTHORITY=/tmp/.docker.xauth \
+    --privileged \
+    -e ROS_MASTER_URI=http://$IP:11311 \
+    -e ROS_IP=$IP \
+    --device /dev/dri \
+    -v /etc/localtime:/etc/localtime:ro \
+    -v $NVIDIA_LIB:/usr/local/nvidia/lib64 \
+    -v $NVIDIA_BIN:/usr/local/nvidia/bin \
+    -v $NVIDIA_LIB32:/usr/local/nvidia/lib \
+    -v /dev/log:/dev/log \
+    -v "/tmp/.docker.xauth:/tmp/.docker.xauth" \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+    --ulimit rtprio=99 -it \
+    srcsim:$DUID /bin/bash

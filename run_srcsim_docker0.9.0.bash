@@ -36,32 +36,27 @@ then
     exit -1
   fi
   # check if nvidia-docker-plugin is installed
-  if curl -s http://localhost:3476/docker/cli > /dev/null
-  then
-    DOCKER_GPU_PARAMS=" $(curl -s http://localhost:3476/docker/cli)"
-  else
-    echo nvidia-docker-plugin not responding on http://localhost:3476/docker/cli
-    echo please install nvidia-docker-plugin
-    echo https://github.com/NVIDIA/nvidia-docker/wiki/Installation
-    exit -1
-  fi
+#  if curl -s http://localhost:3476/docker/cli > /dev/null
+#  then
+#    DOCKER_GPU_PARAMS=" $(curl -s http://localhost:3476/docker/cli)"
+#  else
+#    echo nvidia-docker-plugin not responding on http://localhost:3476/docker/cli
+#    echo please install nvidia-docker-plugin
+#    echo https://github.com/NVIDIA/nvidia-docker/wiki/Installation
+#    exit -1
+#  fi
 else
   DOCKER_GPU_PARAMS=""
 fi
 
 DISPLAY="${DISPLAY:-:0}"
 
-docker run --rm --name srcsim \
-  -e DISPLAY=unix$DISPLAY \
-  -e XAUTHORITY=/tmp/.docker.xauth \
-  -e ROS_MASTER_URI=http://201.1.1.10:11311 \
+nvidia-docker run --rm --name srcsim \
+  --runtime=nvidia \
+   -v /dev/log:/dev/log \
+   -e ROS_MASTER_URI=http://201.1.1.10:11311 \
   -e ROS_IP=201.1.1.10 \
-  -v "/etc/localtime:/etc/localtime:ro" \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -v "/tmp/.docker.xauth:/tmp/.docker.xauth" \
-  -v /dev/log:/dev/log \
   --ulimit rtprio=99 \
   --net=srcsim \
   --ip=201.1.1.10 \
-  ${DOCKER_GPU_PARAMS} \
-  srcsim:0.9.0
+  srcsim:0.9.0 
