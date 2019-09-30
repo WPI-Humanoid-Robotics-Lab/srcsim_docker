@@ -49,7 +49,7 @@ sudo systemctl restart docker
 4. Run the script to build docker image and run the container. Docker needs sudo access by default. If you see an error while running the docker image, use sudo. Refer to [this](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo) if you wish to allow docker commands without sudo.
 ```bash
 # clone the repository if you have not done that already
-git clone https://github.com/WPI-Humanoid-Robotics-Lab/srcsim_docker.git  -b master --single-branch
+git clone https://github.com/WPI-Humanoid-Robotics-Lab/srcsim_docker.git  -b devel --single-branch
 	
 # Go the srcsim_docker directory
 cd srcsim_docker/
