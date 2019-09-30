@@ -57,5 +57,5 @@ docker run --rm --name srcsim_${USER} \
     -v /dev/log:/dev/log \
     -v "/tmp/.docker.xauth:/tmp/.docker.xauth" \
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
-    --ulimit rtprio=99 -it \
-    srcsim:$DUID /bin/bash
+    --ulimit rtprio=99 \
+    srcsim:$DUID

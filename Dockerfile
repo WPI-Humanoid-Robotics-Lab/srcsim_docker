@@ -57,7 +57,8 @@ RUN  sudo apt-get -y update && sudo apt-get install -y git \
   ros-indigo-multisense-ros ros-indigo-robot-self-filter ros-indigo-octomap \
   ros-indigo-octomap-msgs ros-indigo-octomap-ros ros-indigo-gridmap-2d \
   python-software-properties debconf-i18n openjdk-8-jdk mercurial \
-  python-vcstool python-catkin-tools
+  python-vcstool python-catkin-tools libxmlrpc-c++8-dev ros-indigo-orocos-* \
+  ros-indigo-rtt-ros-integration ros-indigo-ros-control ros-indigo-stereo-image-proc
 
 RUN sudo rosdep init
 RUN rosdep update 
@@ -138,7 +139,7 @@ RUN rm /tmp/valkyrie_controller.tar.gz
 ### /Version specific
 
 # Compile the code
-RUN source ~/.bashrc && cd ~/indigo_ws && sudo rm -rf build devel && catkin_make
+RUN /bin/bash -c "source /opt/nasa/indigo/setup.bash && cd ~/indigo_ws && sudo rm -rf build devel && catkin_make"
 RUN sudo chown -R whrl:whrl ~/indigo_ws
 
 # run warmup gradle to download most of the files required for ihmc controllers
@@ -164,7 +165,6 @@ COPY ./keyboard /etc/default/keyboard
 RUN sudo mkdir -p /usr/lib/nvidia/
 # RUN curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
 # RUN sudo apt-get -y update && sudo DEBIAN_FRONTEND=noninteractive apt-get -y install nvidia-384
-RUN /bin/bash -c "sudo apt-get update && sudo apt-get install -y libxmlrpc-c++8-dev liblog4cpp*"
 
 # setup bashrc
 ARG ip
@@ -180,8 +180,5 @@ RUN echo 'source ~/indigo_ws/devel/setup.bash' >> ~/.bashrc
 RUN echo 'source /usr/share/gazebo/setup.sh' >> ~/.bashrc
 RUN source ~/.bashrc
 
-RUN /bin/bash -c "source /opt/nasa/indigo/setup.bash && cd ~/indigo_ws && sudo rm -rf build devel && catkin_make"
-RUN sudo chown -R whrl:whrl ~/indigo_ws
-
 # Run command that should be the entry poitn to our code
-CMD /bin/bash -c "source ~/.bashrc && roslaunch srcsim finals.launch"
+CMD /bin/bash -c "source ~/.bashrc && roslaunch srcsim finals.launch grasping_init:=false"
