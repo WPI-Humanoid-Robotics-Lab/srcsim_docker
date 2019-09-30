@@ -35,15 +35,15 @@ sudo apt-get update
 	
 sudo apt-get install docker-ce
 ```
-3. Install [nvidia-docker plugin](https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(version-1.0)). Please refer to prerequisites in that link.  
+3. Install [nvidia-docker plugin](https://github.com/NVIDIA/nvidia-docker). Please refer to prerequisites in that link.  
 ```bash
+# Add the package repositories
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
 curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-	
-curl -s -L https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
 
-sudo apt-get update
-
-sudo apt-get install nvidia-docker nvidia-modprobe
+sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker
 ```
 
 4. Run the script to build docker image and run the container. Docker needs sudo access by default. If you see an error while running the docker image, use sudo. Refer to [this](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo) if you wish to allow docker commands without sudo.
@@ -56,21 +56,26 @@ cd srcsim_docker/
 	
 # When running it for the first time, it might take a while depending on your internet speed
 # The scripts have IHMC controller version number in the name
-bash run_srcsim_docker0.9.bash
+bash run_srcsim_docker0.11.bash
 ```
 
 5. Connect gazebo client on host machine (in a new terminal)
 ```bash
-GAZEBO_MASTER_URI=http://201.1.1.10:11345 gzclient
+DUID=$((UID%256))
+IP=${IPADDR:-172.16.$DUID.$DUID}
+export GAZEBO_MASTER_URI=http://${IP}:11345  
+gzclient
 ```
 6. To run code on docker image export the following variables. You can add these to ~/.bashrc for ease of use.
 ```bash
-export ROS_MASTER_URI=http://201.1.1.10:11311
-export ROS_IP=201.1.0.1 # Confirm this from ifconfig results
+DUID=$((UID%256))
+IP=${IPADDR:-172.16.$DUID.$DUID}
+export ROS_MASTER_URI=http://${IP}:11311
+export ROS_IP=172.16.232.1 # Confirm this from ifconfig results
 ```
 7. Source ~/.bashrc and test connection
 ```bash
 source ~/.bashrc
 rosrun tough_controller_interface test_pelvis 0.8
 ```
-8. To stop the docker run `docker stop srcsim`
+8. To stop the docker run `docker stop srcsim_${USER}`
