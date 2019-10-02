@@ -41,7 +41,7 @@ RUN sudo tar -xvzf /tmp/nasa.tar.gz -C /opt/
 # Install Dependencies 
 RUN  sudo apt-get -y update && sudo apt-get install -y git \
   g++ vim nano wget  ca-certificates  ssh ruby ros-indigo-pcl-ros \
-  x11vnc xvfb icewm lxpanel iperf xz-utils cmake screen terminator konsole\ 
+  x11vnc xvfb icewm lxpanel iperf xz-utils cmake screen terminator \ 
   ros-indigo-pcl-conversions ros-indigo-moveit \
   ros-indigo-trac-ik ros-indigo-footstep-planner \
   ros-indigo-humanoid-localization ros-indigo-multisense-ros \
@@ -58,28 +58,21 @@ RUN  sudo apt-get -y update && sudo apt-get install -y git \
   ros-indigo-octomap-msgs ros-indigo-octomap-ros ros-indigo-gridmap-2d \
   python-software-properties debconf-i18n openjdk-8-jdk mercurial \
   python-vcstool python-catkin-tools libxmlrpc-c++8-dev ros-indigo-orocos-* \
-  ros-indigo-rtt-ros-integration ros-indigo-ros-control ros-indigo-stereo-image-proc
+  ros-indigo-rtt-ros-integration ros-indigo-ros-control ros-indigo-stereo-image-proc \
+  bison flex gperf libasound2-dev libgl1-mesa-dev \
+  libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libjpeg-dev \
+  libpng-dev libx11-dev libxml2-dev libxslt1-dev libxt-dev \
+  libxxf86vm-dev pkg-config x11proto-core-dev \
+  x11proto-xf86vidmode-dev libavcodec-dev mercurial \
+  libgtk2.0-dev libgtk-3-dev \
+  libxtst-dev libudev-dev libavformat-dev
 
 RUN sudo rosdep init
 RUN rosdep update 
 
 # Setup java home
 RUN sudo ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/default-java
-
-# Install openjfx pending
-#RUN mkdir -p /tmp/openjfx && cd /tmp/openjfx 
-#RUN sudo apt-get build-dep libopenjfx-java 
-#RUN sudo apt-get --compile source libopenjfx-java
-#RUN sudo dpkg -i *.deb
-
-
-# # Create a catkin workspace
-# RUN source /opt/nasa/indigo/setup.bash && \
-#     mkdir -p ~/indigo_ws/src && \
-#     cd ~/indigo_ws/src && \
-#     catkin_init_workspace && \
-#     cd ~/indigo_ws/ 
-
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
 
 
 RUN mkdir -p ${HOME}/.ihmc; curl https://raw.githubusercontent.com/ihmcrobotics/ihmc_ros_core/0.8.0/ihmc_ros_common/configurations/IHMCNetworkParametersTemplate.ini > ${HOME}/.ihmc/IHMCNetworkParameters.ini
@@ -111,29 +104,18 @@ RUN tar -xvzf /tmp/srcsim.tar.gz -C ~/indigo_ws/src/
 
 ### Version specific
 # can this be compiled locally? No. it needs javafx. we should find a solution to that for ubuntu 14.04 first
-
-# RUN cd ~/repository-group && git clone https://github.com/WPI-Humanoid-Robotics-Lab/ihmc-open-robotics-software.git
-# RUN cd ~/repository-group/ihmc-open-robotics-software && git checkout gazebo_devel && ./gradlew
-
-# Clone ihmc repos locally
-# RUN mkdir ~/indigo_ws/src/ihmc_repos
-# RUN git clone https://github.com/WPI-Humanoid-Robotics-Lab/ihmc_ros_core.git ~/indigo_ws/src/ihmc_repos/ihmc_ros_core
-# RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_ros_core && git checkout 0.9.2
-# COPY ihmc_ros_core.patch  /home/whrl/indigo_ws/src/ihmc_repos/ihmc_ros_core.patch
-# RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_ros_core && git apply /home/whrl/indigo_ws/src/ihmc_repos/ihmc_ros_core.patch
-
-# RUN git clone https://github.com/ihmcrobotics/ihmc_valkyrie_ros.git ~/indigo_ws/src/ihmc_repos/ihmc_valkyrie_ros
-# RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_valkyrie_ros && git checkout 0.9.0
-# RUN git clone https://github.com/ihmcrobotics/ihmc-ros-control.git ~/indigo_ws/src/ihmc_repos/ihmc_ros_control
-# RUN cd ~/indigo_ws/src/ihmc_repos/ihmc_ros_control && git checkout 0.5.0
-
-# 0.9
-RUN wget -P /tmp/ https://osrf-distributions.s3.amazonaws.com/srcsim/valkyrie_controller.tar.gz 
-# 0.8.2
-# RUN wget -c https://osrf-distributions.s3.us-east-1.amazonaws.com/srcsim/valkyrie_controller.0.8.2.tar.gz -O /tmp/valkyrie_controller.tar.gz
-
-RUN tar -xvf /tmp/valkyrie_controller.tar.gz -C $HOME
-RUN rm /tmp/valkyrie_controller.tar.gz
+RUN cd && git clone https://github.com/ihmcrobotics/repository-group.git
+RUN cd ~/repository-group && git clone https://github.com/WPI-Humanoid-Robotics-Lab/ihmc-open-robotics-software.git
+RUN cd ~/repository-group/ihmc-open-robotics-software && git checkout 0.9-src-finals 
+RUN sudo update-ca-certificates -f
+#compile openfx locally
+RUN /bin/bash -c "cd  && wget https://services.gradle.org/distributions/gradle-4.8-bin.zip \
+  && unzip gradle-4.8-bin.zip"
+ENV PATH ~/gradle-4.8/bin:${PATH}
+COPY javafx-sdk-overlay.zip $JAVA_HOME
+RUN /bin/bash -c "cd $JAVA_HOME && sudo unzip javafx-sdk-overlay.zip"
+RUN cd ~/repository-group/ihmc-open-robotics-software && ./gradlew 
+RUN cd ~/repository-group/ihmc-open-robotics-software && ./gradlew -q deployLocal
 
 
 ### /Version specific
@@ -141,11 +123,6 @@ RUN rm /tmp/valkyrie_controller.tar.gz
 # Compile the code
 RUN /bin/bash -c "source /opt/nasa/indigo/setup.bash && cd ~/indigo_ws && sudo rm -rf build devel && catkin_make"
 RUN sudo chown -R whrl:whrl ~/indigo_ws
-
-# run warmup gradle to download most of the files required for ihmc controllers
-RUN source ~/indigo_ws/devel/setup.bash && export ROS_MASTER_URI=http://localhost:11311 && \
-  export ROS_IP=127.0.0.1 && roslaunch ihmc_valkyrie_ros valkyrie_warmup_gradle_cache.launch
-
 
 # Nvidia stuff
 RUN sudo bash -c "touch /etc/ld.so.conf.d/nvidia.conf"
@@ -181,4 +158,5 @@ RUN echo 'source /usr/share/gazebo/setup.sh' >> ~/.bashrc
 RUN source ~/.bashrc
 
 # Run command that should be the entry poitn to our code
-CMD /bin/bash -c "source ~/.bashrc && roslaunch srcsim finals.launch grasping_init:=false"
+CMD /bin/bash 
+#-c "source ~/.bashrc && roslaunch srcsim finals.launch grasping_init:=false"
