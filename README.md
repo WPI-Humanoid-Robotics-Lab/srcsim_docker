@@ -45,32 +45,74 @@ sudo apt-get update
 
 sudo apt-get install nvidia-docker nvidia-modprobe
 ```
-
-4. Run the script to build docker image and run the container. Docker needs sudo access by default. If you see an error while running the docker image, use sudo. Refer to [this](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo) if you wish to allow docker commands without sudo.
+4. Check Nvidia driver version
 ```bash
+# find out the version of nvidia drivers installed
+glxinfo | grep "OpenGL core profile version" 
+# output of this should be something similar to 
+# OpenGL core profile version string: 4.5.0 NVIDIA 384.130
+# In this case, the driver version is 384.130
+
+# search for the bin, lib and lib32 directories
+dpkg -L nvidia-384 # change nvidia-384 to the major number of installed version
+# based on the output, relevant directories on my machine are /usr/lib/nvidia-384/bin, /usr/lib/nvidia-384, and /usr/lib32/nvidia-384
+
+```
+
+5. Open ~/.bashrc file and add the following lines to it. 
+
+```bash
+######## srcsim_docker ##############
+export NVIDIA_BIN="/usr/lib/nvidia-384/bin"
+export NVIDIA_LIB="/usr/lib/nvidia-384"
+export NVIDIA_LIB32="/usr/lib32/nvidia-384"
+
+######### docker aliases #############
+DUID=$((UID%256))
+export IP=${IPADDR:-172.16.$DUID.$DUID}
+alias source_dock="export ROS_MASTER_URI=http://${IP}:11311 && \
+                  export ROS_IP=172.16.$DUID.1" # Confirm this from ifconfig results
+
+export SRCSIM_DOCKER_DIR="~/srcsim_docker" # change this based on your configuration
+alias start_dock="cd $SRCSIM_DOCKER_DIR && bash run_ srcsim_docker.bash"
+alias stop_dock="docker stop srcsim_${USER}"
+alias gazebo_dock="GAZEBO_MASTER_URI=http://${IP}:11345 gzclient"
+
+######### ROS  ##########
+source /opt/ros/kinetic/setup.bash
+source ~/kinetic_ws/install/setup.bash
+source ~/kinetic_ws/install/share/drcsim/setup.sh
+
+############ IHMC Controllers ################
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
+export IHMC_SOURCE_LOCATION=~/repository-group/ihmc-open-robotics-software
+```
+
+6. Run the script to build docker image and run the container. Docker needs sudo access by default. If you see an error while running the docker image, use sudo. Refer to [this](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo) if you wish to allow docker commands without sudo.
+```bash
+source ~/.bashrc
 # clone the repository if you have not done that already
-git clone https://github.com/WPI-Humanoid-Robotics-Lab/srcsim_docker.git  -b master --single-branch
+git clone https://github.com/WPI-Humanoid-Robotics-Lab/srcsim_docker.git  -b devel
 	
 # Go the srcsim_docker directory
 cd srcsim_docker/
 	
 # When running it for the first time, it might take a while depending on your internet speed
 # The scripts have IHMC controller version number in the name
-bash run_srcsim_docker0.9.bash
+start_dock
 ```
 
-5. Connect gazebo client on host machine (in a new terminal)
+7. Connect gazebo client on host machine (in a new terminal)
 ```bash
-GAZEBO_MASTER_URI=http://201.1.1.10:11345 gzclient
+gazebo_dock
 ```
-6. To run code on docker image export the following variables. You can add these to ~/.bashrc for ease of use.
+8. To run code on docker image export the following variables. You can add these to ~/.bashrc for ease of use.
 ```bash
-export ROS_MASTER_URI=http://201.1.1.10:11311
-export ROS_IP=201.1.0.1 # Confirm this from ifconfig results
+source_dock
 ```
-7. Source ~/.bashrc and test connection
+9. Source ~/.bashrc and test connection
 ```bash
 source ~/.bashrc
 rosrun tough_controller_interface test_pelvis 0.8
 ```
-8. To stop the docker run `docker stop srcsim`
+10. To stop the docker run `docker stop srcsim_${USER}`
