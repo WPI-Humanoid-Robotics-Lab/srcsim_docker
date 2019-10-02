@@ -74,7 +74,7 @@ alias source_dock="export ROS_MASTER_URI=http://${IP}:11311 && \
                   export ROS_IP=172.16.$DUID.1" # Confirm this from ifconfig results
 
 export SRCSIM_DOCKER_DIR="~/srcsim_docker" # change this based on your configuration
-alias start_dock="cd $SRCSIM_DOCKER_DIR && bash run_ srcsim_docker.bash"
+alias start_dock="cd $SRCSIM_DOCKER_DIR && bash run_srcsim_docker.bash"
 alias stop_dock="docker stop srcsim_${USER}"
 alias gazebo_dock="GAZEBO_MASTER_URI=http://${IP}:11345 gzclient"
 
