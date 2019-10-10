@@ -92,10 +92,9 @@ RUN rm /tmp/default.tar.gz
 RUN /bin/bash -c "source /opt/nasa/indigo/setup.bash && mkdir ~/indigo_ws "
 RUN /bin/bash -c "cd ~/indigo_ws && catkin config --init --mkdirs"
 # RUN /bin/bash -c "wget https://raw.githubusercontent.com/WPI-Humanoid-Robotics-Lab/atlas_workspace/master/atlas_ws_0.9.yaml -O ~/indigo_ws/src/atlas_ws.yaml"
-COPY atlas_ws_0.9.yaml /home/whrl/indigo_ws/src/
-RUN cat ~/indigo_ws/src/atlas_ws_0.9.yaml
-RUN /bin/bash -c "cd ~/indigo_ws/src && vcs import < atlas_ws_0.9.yaml"
-RUN /bin/bash -c "rm -r ~/indigo_ws/src/tough*"
+COPY valkyrie_ws_0.8.2.yaml /home/whrl/indigo_ws/src/
+RUN cat /home/whrl/indigo_ws/src/valkyrie_ws_0.8.2.yaml
+RUN /bin/bash -c "cd ~/indigo_ws/src && vcs import < valkyrie_ws_0.8.2.yaml"
 RUN /bin/bash -c "cd ~/indigo_ws && rosdep install --from-paths src --ignore-src -r -y"
 
 # Clone srcsim locally
@@ -106,7 +105,7 @@ RUN tar -xvzf /tmp/srcsim.tar.gz -C ~/indigo_ws/src/
 # can this be compiled locally? No. it needs javafx. we should find a solution to that for ubuntu 14.04 first
 RUN cd && git clone https://github.com/ihmcrobotics/repository-group.git
 RUN cd ~/repository-group && git clone https://github.com/WPI-Humanoid-Robotics-Lab/ihmc-open-robotics-software.git
-RUN cd ~/repository-group/ihmc-open-robotics-software && git checkout 0.9-src-finals 
+RUN cd ~/repository-group/ihmc-open-robotics-software && git checkout 0.8.2-fix 
 RUN sudo update-ca-certificates -f
 #compile openfx locally
 RUN /bin/bash -c "cd  && wget https://services.gradle.org/distributions/gradle-4.8-bin.zip \
@@ -114,8 +113,8 @@ RUN /bin/bash -c "cd  && wget https://services.gradle.org/distributions/gradle-4
 ENV PATH ~/gradle-4.8/bin:${PATH}
 COPY javafx-sdk-overlay.zip $JAVA_HOME
 RUN /bin/bash -c "cd $JAVA_HOME && sudo unzip javafx-sdk-overlay.zip"
-RUN cd ~/repository-group/ihmc-open-robotics-software && ./gradlew 
-RUN cd ~/repository-group/ihmc-open-robotics-software && ./gradlew -q deployLocal
+RUN /bin/bash -c "cd ~/repository-group/ihmc-open-robotics-software/Valkyrie && \
+  pwd && gradle tasks && gradle -q deployLocal"
 
 
 ### /Version specific

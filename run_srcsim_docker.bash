@@ -4,7 +4,7 @@ DUID=$((UID%256))
 IP=${IPADDR:-172.16.$DUID.$DUID}
 
 # if [[ "$(docker images -q drcsim:$DUID 2> /dev/null)" == "" ]]; then
-docker build -t srcsim:$DUID --build-arg ip=$IP .
+docker build -t srcsim_0.8.2:$DUID --build-arg ip=$IP .
 # fi
 
 if [[ "$(docker network ls | grep docker_bridge_$DUID 2> /dev/null)" == "" ]]; then
@@ -12,7 +12,7 @@ if [[ "$(docker network ls | grep docker_bridge_$DUID 2> /dev/null)" == "" ]]; t
   docker network create --subnet=172.16.$DUID.0/24 --driver=bridge docker_bridge_$DUID
 fi
 
-echo "running srcsim 0.11 docker container"
+echo "running srcsim 0.8.2 docker container"
 
 # Gazebo won't start gpurayplugin without display
 XAUTH=/tmp/.docker.xauth
@@ -58,4 +58,4 @@ docker run --rm --name srcsim_${USER} \
     -v "/tmp/.docker.xauth:/tmp/.docker.xauth" \
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
     --ulimit rtprio=99 -it \
-    srcsim:$DUID /bin/bash
+    srcsim_0.8.2:$DUID /bin/bash

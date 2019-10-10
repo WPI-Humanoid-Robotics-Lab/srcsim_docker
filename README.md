@@ -2,7 +2,7 @@
 Docker images for srcsim
 
 ### Instructions
-1. Install [docker-ce](https://docs.docker.com/install/linux/docker-ce/ubuntu/) using the instructions given below.
+1. Install [docker-ce](https://docs.docker.com/install/linux/docker-ce/ubuntu/) using the instructions given below. If docker is already installed upgrade it to 19.03.x or greater and skip this step.  
 ```bash
 sudo apt-get update
 
@@ -35,7 +35,7 @@ sudo apt-get update
 	
 sudo apt-get install docker-ce
 ```
-3. Install [nvidia-docker plugin](https://github.com/NVIDIA/nvidia-docker). Please refer to prerequisites in that link.  
+2. Install [nvidia-docker plugin](https://github.com/NVIDIA/nvidia-docker). Please refer to prerequisites in that link.  
 ```bash
 # Add the package repositories
 distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
@@ -45,7 +45,7 @@ curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.li
 sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
 sudo systemctl restart docker
 ```
-4. Check Nvidia driver version
+3. Check Nvidia driver version on host machine
 ```bash
 # find out the version of nvidia drivers installed
 glxinfo | grep "OpenGL core profile version" 
@@ -55,11 +55,11 @@ glxinfo | grep "OpenGL core profile version"
 
 # search for the bin, lib and lib32 directories
 dpkg -L nvidia-384 # change nvidia-384 to the major number of installed version
-# based on the output, relevant directories on my machine are /usr/lib/nvidia-384/bin, /usr/lib/nvidia-384, and /usr/lib32/nvidia-384
+# based on the output, relevant directories on host machine are /usr/lib/nvidia-384/bin, /usr/lib/nvidia-384, and /usr/lib32/nvidia-384
 
 ```
 
-5. Open ~/.bashrc file and add the following lines to it. 
+4. Open ~/.bashrc file and add the following lines to it. 
 
 ```bash
 ######## srcsim_docker ##############
@@ -88,11 +88,12 @@ export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
 export IHMC_SOURCE_LOCATION=~/repository-group/ihmc-open-robotics-software
 ```
 
-6. Run the script to build docker image and run the container. Docker needs sudo access by default. If you see an error while running the docker image, use sudo. Refer to [this](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo) if you wish to allow docker commands without sudo.
+5. Run the script to build docker image and run the container. Docker needs sudo access by default. If you see an error while running the docker image, use sudo. Refer to [this](https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo) if you wish to allow docker commands without sudo.
 ```bash
+# on host machine
 source ~/.bashrc
 # clone the repository if you have not done that already
-git clone https://github.com/WPI-Humanoid-Robotics-Lab/srcsim_docker.git  -b devel
+git clone https://github.com/WPI-Humanoid-Robotics-Lab/srcsim_docker.git  -b 0.8.2
 	
 # Go the srcsim_docker directory
 cd srcsim_docker/
@@ -102,17 +103,30 @@ cd srcsim_docker/
 start_dock
 ```
 
-7. Connect gazebo client on host machine (in a new terminal)
+7. The above command will create a docker container and provide bash shell. Type the following command in the shell. It will take about 30 minutes to download all the dependencies. You should see gazebo client with Valkyrie robot. 
 ```bash
-gazebo_dock
+# In docker shell
+roslaunch srcsim unique_task1.launch grasping_init:=false use_local_build:=true
 ```
-8. To run code on docker image export the following variables. You can add these to ~/.bashrc for ease of use.
+>The robot cannot be controlled in the first run. When the shell displays `IHMC ROS API node successfully started.
+ Building 66% > :runJavaDelegate`, move to next step. 
+
+8. Terminate the roslaunch command with `CTRL+C` and commit the changes to docker container.
 ```bash
-source_dock
+# on host machine
+docker commit srcsim_${USER} srcsim_0.8.2:${DUID}
 ```
-9. Source ~/.bashrc and test connection
+
+9. Restart it with following command.
 ```bash
+# In docker shell
+roslaunch srcsim unique_task1.launch grasping_init_wait_time:=200 use_local_build:=true
+# depending on the host machine configuration, the grasping_init_wait_time can change. It should be such that it allows for the robot to be standing before the grasping controllers initialize.
+```
+10. In a new terminal,  source ~/.bashrc and test connection
+```bash
+# on host machine
 source ~/.bashrc
 rosrun tough_controller_interface test_pelvis 0.8
 ```
-10. To stop the docker run `docker stop srcsim_${USER}`
+11. To stop the docker run `stop_dock`.
