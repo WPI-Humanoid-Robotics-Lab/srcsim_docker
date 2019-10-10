@@ -9,7 +9,7 @@ repositories:
    ihmc_repos/ihmc_ros_control:
        type: git
        url: https://github.com/WPI-Humanoid-Robotics-Lab/ihmc-ros-control.git
-       version: 0.8.2-fix
+       version: 4961a346d11c35fbd71f7e3309f624339b44216b
 
  #Depends on:
    ihmc_repos/ihmc_atlas_ros:
