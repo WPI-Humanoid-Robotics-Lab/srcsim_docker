@@ -113,8 +113,8 @@ RUN /bin/bash -c "cd  && wget https://services.gradle.org/distributions/gradle-4
 ENV PATH ~/gradle-4.8/bin:${PATH}
 COPY javafx-sdk-overlay.zip $JAVA_HOME
 RUN /bin/bash -c "cd $JAVA_HOME && sudo unzip javafx-sdk-overlay.zip"
-RUN /bin/bash -c "cd ~/repository-group/ihmc-open-robotics-software/Valkyrie && \
-  pwd && gradle tasks && gradle -q deployLocal"
+RUN cd ~/repository-group/ihmc-open-robotics-software/Valkyrie && \
+  pwd && gradle tasks && gradle -q deployLocal
 
 
 ### /Version specific
