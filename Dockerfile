@@ -142,6 +142,11 @@ RUN sudo mkdir -p /usr/lib/nvidia/
 # RUN curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
 # RUN sudo apt-get -y update && sudo DEBIAN_FRONTEND=noninteractive apt-get -y install nvidia-384
 
+ARG uid
+ENV USERID=$uid
+RUN usermod -u ${USERID} whrl
+RUN groupmod -g ${USERID} whrl
+
 # setup bashrc
 ARG ip
 ENV IP=$ip
