@@ -7,7 +7,9 @@ SHELL ["/bin/bash", "-c"]
 RUN sudo rm /bin/sh && sudo ln -s /bin/bash /bin/sh
 
 # Create a user
-RUN export uid=1000 gid=1000 && \
+ARG uid
+ENV USERID=$uid
+RUN export uid=${USERID} gid=${USERID} && \
   mkdir -p /home/whrl && \
   echo "whrl:x:${uid}:${gid}:Whrl,,,:/home/whrl:/bin/bash" >> /etc/passwd && \
   echo "whrl:x:${uid}:" >> /etc/group && \
@@ -141,11 +143,6 @@ COPY ./keyboard /etc/default/keyboard
 RUN sudo mkdir -p /usr/lib/nvidia/
 # RUN curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
 # RUN sudo apt-get -y update && sudo DEBIAN_FRONTEND=noninteractive apt-get -y install nvidia-384
-
-ARG uid
-ENV USERID=$uid
-RUN usermod -u ${USERID} whrl
-RUN groupmod -g ${USERID} whrl
 
 # setup bashrc
 ARG ip
