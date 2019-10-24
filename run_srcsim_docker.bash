@@ -44,7 +44,7 @@ printf "IP address is $IP \nROS master URI : http://$IP:11311 \nGazebo master UR
 docker run --rm --name srcsim_${USER} \
     -e DISPLAY=unix$DISPLAY \
     --net=docker_bridge_$DUID \
-    --ip=$IP --uid=$UID \
+    --ip=$IP --user=$UID \
     -e XAUTHORITY=/tmp/.docker.xauth \
     --privileged \
     -e ROS_MASTER_URI=http://$IP:11311 \

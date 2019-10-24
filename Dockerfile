@@ -9,6 +9,7 @@ RUN sudo rm /bin/sh && sudo ln -s /bin/bash /bin/sh
 # Create a user
 ARG uid
 ENV USERID=$uid
+RUN useradd -ms /bin/bash whrl
 RUN export uid=${USERID} gid=${USERID} && \
   mkdir -p /home/whrl && \
   echo "whrl:x:${uid}:${gid}:Whrl,,,:/home/whrl:/bin/bash" >> /etc/passwd && \
