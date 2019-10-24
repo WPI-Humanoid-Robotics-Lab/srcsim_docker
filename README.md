@@ -127,6 +127,6 @@ roslaunch srcsim unique_task1.launch grasping_init_wait_time:=200 use_local_buil
 ```bash
 # on host machine
 source ~/.bashrc
-rosrun tough_controller_interface test_pelvis 0.8
+rosrun tough_examples pelvis_control_example 0.9
 ```
 11. To stop the docker run `stop_dock`.
